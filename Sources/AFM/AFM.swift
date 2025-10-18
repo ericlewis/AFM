@@ -27,14 +27,12 @@ public struct ToolCall: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationCall: FoundationModels.ToolCall) {
         self.init(identifier: foundationCall.identifier,
                   name: foundationCall.name,
                   argumentsJSON: foundationCall.argumentsJSON)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationCall: FoundationModels.ToolCall {
         FoundationModels.ToolCall(identifier: identifier,
                                   name: name,
@@ -53,13 +51,11 @@ public struct ToolResult: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationResult: FoundationModels.ToolResult) {
         self.init(callIdentifier: foundationResult.callIdentifier,
                   payloadJSON: foundationResult.payloadJSON)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationResult: FoundationModels.ToolResult {
         FoundationModels.ToolResult(callIdentifier: callIdentifier,
                                     payloadJSON: payloadJSON)
@@ -144,7 +140,6 @@ public struct ChatMessage: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationMessage: FoundationModels.ChatMessage) {
         switch foundationMessage.content {
         case let .text(text):
@@ -158,7 +153,6 @@ public struct ChatMessage: Codable, Hashable, Sendable {
         }
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationMessage: FoundationModels.ChatMessage {
         switch content {
         case let .text(text):
@@ -392,7 +386,6 @@ public struct GenerationOptions: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(configuration: FoundationModels.ChatConfiguration) {
         self.init(temperature: configuration.temperature,
                   topP: configuration.topP,
@@ -401,7 +394,6 @@ public struct GenerationOptions: Codable, Hashable, Sendable {
                   tools: configuration.tools.map { ToolSpecification(foundationTool: $0) })
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationConfiguration: FoundationModels.ChatConfiguration {
         var configuration = FoundationModels.ChatConfiguration()
         configuration.temperature = temperature ?? configuration.temperature
@@ -426,14 +418,12 @@ public struct ToolSpecification: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationTool: FoundationModels.ChatConfiguration.Tool) {
         self.init(name: foundationTool.name,
                   description: foundationTool.description,
                   inputFormatJSONSchema: foundationTool.inputFormatJSONSchema)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationTool: FoundationModels.ChatConfiguration.Tool {
         FoundationModels.ChatConfiguration.Tool(name: name,
                                                 description: description,
@@ -454,13 +444,11 @@ public struct TokenUsage: Codable, Hashable, Sendable {
     public var totalTokens: Int { promptTokens + completionTokens }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationUsage: FoundationModels.ChatResult.Usage) {
         self.init(promptTokens: foundationUsage.promptTokens,
                   completionTokens: foundationUsage.completionTokens)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var foundationUsage: FoundationModels.ChatResult.Usage {
         FoundationModels.ChatResult.Usage(promptTokens: promptTokens,
                                           completionTokens: completionTokens)
@@ -485,7 +473,6 @@ public struct ChatResponse: Codable, Hashable, Sendable {
     }
 
     #if canImport(FoundationModels)
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationResult: FoundationModels.ChatResult) throws {
         guard let primary = foundationResult.messages.last else {
             throw FoundationModelWrapperError.emptyResponse
@@ -499,7 +486,6 @@ public struct ChatResponse: Codable, Hashable, Sendable {
         )
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public func foundationResult() -> FoundationModels.ChatResult {
         var messages = additionalMessages.map { $0.foundationMessage }
         messages.append(message.foundationMessage)
@@ -551,7 +537,13 @@ public struct SystemLanguageModel {
 
     public enum Availability: Sendable, Hashable, Codable {
         case available
-        case unavailable(String)
+        case unavailable(UnavailableReason)
+
+        public enum UnavailableReason: String, Sendable, Hashable, Codable {
+            case appleIntelligenceNotEnabled
+            case deviceNotEligible
+            case modelNotReady
+        }
     }
 
     private final class AdapterRegistry: @unchecked Sendable {
@@ -1019,7 +1011,6 @@ public enum FoundationModelWrapperError: Error, Equatable {
 // MARK: - Conditional bridging helpers
 
 #if canImport(FoundationModels)
-@available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
 public struct FoundationModelsChatAdapter: ChatModel {
     private let session: ChatSession
 
@@ -1036,7 +1027,6 @@ public struct FoundationModelsChatAdapter: ChatModel {
 }
 
 extension FoundationModels.ChatMessage {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(afmMessage message: ChatMessage) {
         switch message.content {
         case let .text(text):
@@ -1050,14 +1040,12 @@ extension FoundationModels.ChatMessage {
         }
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var afmMessage: ChatMessage {
         ChatMessage(foundationMessage: self)
     }
 }
 
 extension ChatRole {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(foundationRole role: FoundationModels.ChatRole) {
         switch role {
         case .system: self = .system
@@ -1071,7 +1059,6 @@ extension ChatRole {
 }
 
 extension FoundationModels.ChatRole {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(_ role: ChatRole) {
         switch role {
         case .system: self = .system
@@ -1083,37 +1070,31 @@ extension FoundationModels.ChatRole {
 }
 
 extension FoundationModels.ToolCall {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(afmCall: ToolCall) {
         self.init(identifier: afmCall.identifier,
                   name: afmCall.name,
                   argumentsJSON: afmCall.argumentsJSON)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var afmCall: ToolCall { ToolCall(foundationCall: self) }
 }
 
 extension FoundationModels.ToolResult {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(afmResult: ToolResult) {
         self.init(callIdentifier: afmResult.callIdentifier,
                   payloadJSON: afmResult.payloadJSON)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var afmResult: ToolResult { ToolResult(foundationResult: self) }
 }
 
 extension FoundationModels.ChatConfiguration.Tool {
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public init(afmSpecification: ToolSpecification) {
         self.init(name: afmSpecification.name,
                   description: afmSpecification.description,
                   inputFormatJSONSchema: afmSpecification.inputFormatJSONSchema)
     }
 
-    @available(macOS 15, iOS 18, watchOS 11, tvOS 18, visionOS 2, *)
     public var afmSpecification: ToolSpecification { ToolSpecification(foundationTool: self) }
 }
 #endif
